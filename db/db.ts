@@ -24,4 +24,9 @@ async function getAllProducts() {
     return await db.getAll("products");
 }
 
-export { initDB, addProduct, getAllProducts };
+async function removeAllProducts() {
+    const db = await initDB();
+    await db.clear("products");
+}
+
+export { initDB, addProduct, getAllProducts, removeAllProducts };

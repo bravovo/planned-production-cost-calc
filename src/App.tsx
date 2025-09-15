@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import './App.css'
 import Input from './components/input/Input';
 import type { Product } from './types/types';
-import { addProduct, getAllProducts } from '../db/db';
+import { addProduct, getAllProducts, removeAllProducts } from '../db/db';
+import CalcTable from './components/calcTable/CalcTable';
 
 function App() {
   const [name, setName] = useState<string>('');
@@ -18,11 +19,16 @@ function App() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
 
+    if (!name) {
+      window.alert("Для збереження потрібно ввести назву продукту");
+      return;
+    }
+
     const tax = 0.22 * (mainSalary + addSalary);
     const prepCosts = 2 * mainSalary;
     const adminCosts = 1.2 * mainSalary;
 
-    const unitCosts = mainSalary + addSalary + tax + prepCosts + genCosts + adminCosts;
+    const unitCosts = mainSalary + addSalary + tax + prepCosts + genCosts + adminCosts - waste;
     const totalCosts = unitCosts * quantity;
 
     const product: Product = {
@@ -60,14 +66,13 @@ function App() {
     setWaste(0);
   }
 
-  function renderTable(products: Product[]) {
-    console.log(products);
-    return <table className="w-full border-collapse border border-white">
-    </table>
+  async function resetTable() {
+    await removeAllProducts();
+    setProducts([]);
   }
 
   return (
-    <>
+    <div className='flex flex-col gap-4 justify-center items-center'>
       <form className='w-[700px] flex flex-col justify-center items-start p-3 border-[#282828] border-2 rounded-2xl gap-1' onSubmit={onSubmit}>
         <div className='w-full flex flex-col justify-center items-center'><h2 className='text-3xl font-bold'>Додати продукцію</h2></div>
         <Input label='Назва' type='text' name='name' onChange={(e) => setName(e.target.value)} value={name} />
@@ -78,14 +83,15 @@ function App() {
         <Input label='Додаткова з/п виробничих робітників (грн)' type='number' name='add-salary' onChange={(e) => setAddSalary(+e.target.value)} value={addSalary} />
         <Input label='Загальновиробничі витрати' type='number' name='gen-costs' onChange={(e) => setGenCosts(+e.target.value)} value={genCosts} />
         <Input label='Кількість продукції' type='number' name='quantity' onChange={(e) => setQuantity(+e.target.value)} value={quantity} />
-        <div className='w-full flex flex-col justify-center items-center mt-1'>
-          <button onClick={resetInputs}>Очистити поля</button>
+        <div className='w-full flex flex-row justify-end items-center mt-1 gap-1'>
+          <button type='button' onClick={resetInputs}>Очистити поля</button>
+          <button type='button' onClick={resetTable}>Очистити дані таблиці</button>
           <button type='submit'>Додати продукцію</button>
         </div>
       </form>
 
-      <div>{renderTable(products)}</div>
-    </>
+      {products.length > 0 && <CalcTable products={products} />}
+    </div>
   )
 }
 
