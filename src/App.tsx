@@ -1,9 +1,21 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
 import Input from './components/input/Input';
-import type { Product } from './types/types';
+import type { Product, Row } from './types/types';
 import { addProduct, getAllProducts, removeAllProducts } from '../db/db';
 import CalcTable from './components/calcTable/CalcTable';
+
+const rows: Row[] = [
+  { id: 1, name: "Сировина та основні матеріали", key: "materials" },
+  { id: 2, name: "Допоміжні матеріали", key: "addMaterials" },
+  { id: 3, name: "Зворотні відходи (-)", key: "waste" },
+  { id: 4, name: "Основна з/п виробничих робітників", key: "mainSalary" },
+  { id: 5, name: "Додаткова з/п виробничих робітників", key: "addSalary" },
+  { id: 6, name: "Нараховано ЄСВ", key: 'tax' },
+  { id: 7, name: "Витрати на підготовку та освоєння виробництва", key: "prepCosts" },
+  { id: 8, name: "Загальновиробничі витрати", key: "genCosts" },
+  { id: 9, name: "Адміністративні витрати", key: 'adminCosts' },
+];
 
 function App() {
   const [name, setName] = useState<string>('');
@@ -15,6 +27,14 @@ function App() {
   const [genCosts, setGenCosts] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(0);
   const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function getProducts() {
+      setProducts(await getAllProducts());
+    }
+
+    getProducts();
+  }, []);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -28,7 +48,7 @@ function App() {
     const prepCosts = 2 * mainSalary;
     const adminCosts = 1.2 * mainSalary;
 
-    const unitCosts = mainSalary + addSalary + tax + prepCosts + genCosts + adminCosts - waste;
+    const unitCosts = mainSalary + addSalary + tax + prepCosts + genCosts + adminCosts;
     const totalCosts = unitCosts * quantity;
 
     const product: Product = {
@@ -90,7 +110,7 @@ function App() {
         </div>
       </form>
 
-      {products.length > 0 && <CalcTable products={products} />}
+      {products.length > 0 && <CalcTable products={products} rows={rows} />}
     </div>
   )
 }

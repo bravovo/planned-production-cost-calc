@@ -13,3 +13,5 @@ export interface Product {
     unitCosts: number;
     totalCosts: number;
 }
+
+export type Row = { id: number; name: string; key: string };
